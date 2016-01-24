@@ -18,6 +18,7 @@
 namespace HHKinFit2{
 class HHFitObjectComposite : public HHFitObject {
  public:
+          HHFitObjectComposite();
 	  HHFitObjectComposite(std::vector<HHFitObject*> const& subobjects);
 	  HHFitObjectComposite(HHFitObject* subobject1, HHFitObject* subobject2);
 	  HHFitObjectComposite(HHFitObject* subobject1, HHFitObject* subobject2, HHFitObject* subobject3);

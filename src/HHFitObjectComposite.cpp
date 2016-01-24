@@ -6,6 +6,9 @@
 
 #include <iostream>
 
+HHKinFit2::HHFitObjectComposite::HHFitObjectComposite(): m_cov_set(false){
+}
+
 HHKinFit2::HHFitObjectComposite::HHFitObjectComposite(std::vector<HHFitObject*> const& subobjects)
   : m_subobjects(subobjects),
     m_cov_set(false){

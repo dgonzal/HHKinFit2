@@ -36,6 +36,11 @@ int main(int argc, char* argv[])
 
   heavyhiggsfit.fit();
 
+
+  std::cout<<"Met covariance matrix: "<<std::endl;
+  std::cout<< "| " <<met_cov[0][0]<<" ; "<<met_cov[0][1]<<" |"<<std::endl;
+  std::cout<< "| " <<met_cov[1][0]<<" ; "<<met_cov[1][1]<<" |"<<std::endl;
+
   std::cout << "Heavy Higgs fit finished." << std::endl;
 
   std::cout << "m_H: " << heavyhiggsfit.getMH() << "GeV" << std::endl;
