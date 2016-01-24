@@ -8,6 +8,7 @@ namespace HHKinFit2{
 
   public:
     HHLorentzVector(double x, double y, double z, double t);
+    HHLorentzVector(TLorentzVector a);
     HHLorentzVector();
     void SetEEtaPhiM(double E,double Eta,double Phi,double M);
     void SetEkeepM(double E);

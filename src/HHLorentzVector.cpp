@@ -16,6 +16,10 @@ HHKinFit2::HHLorentzVector::HHLorentzVector(double x, double y, double z, double
 HHKinFit2::HHLorentzVector::HHLorentzVector()
   : TLorentzVector(){
 }
+HHKinFit2::HHLorentzVector::HHLorentzVector(TLorentzVector a) 
+  : TLorentzVector(a){
+}
+
 
 void
 HHKinFit2::HHLorentzVector::SetEEtaPhiM(double E, double eta, double phi, double m){
