@@ -12,12 +12,12 @@ using HHKinFit2::HHKinFitBprime;
 
 int main(int argc, char* argv[])
 {
-  TLorentzVector bjet(11.8452,-105.891,-39.7275,113.83);
-  TLorentzVector wlep(140.574,-732.856,-74.6357,754.237);
+  TLorentzVector bjet(147.05,53.0542,112.474,195.776);
+  TLorentzVector wlep(111.846,107.545,230.64,315.932);
  
   std::vector<TLorentzVector> whad_jets;
-  whad_jets.push_back(TLorentzVector(-88.0436,412.585,-93.1624,438.205));
-  whad_jets.push_back(TLorentzVector(-39.0579,178.675,61.0409,193.553));
+  whad_jets.push_back(TLorentzVector(-151.35,-215.554,-538.938,600.031));
+  whad_jets.push_back(TLorentzVector(-172.353,-103.085,-363.394,415.385));
 
   std::vector<double> whad_jet_errors;
   whad_jet_errors.push_back(70.);

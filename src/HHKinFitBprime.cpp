@@ -85,7 +85,13 @@ void HHKinFit2::HHKinFitBprime::fit(){
 
   //fit
   HHKinFit2::HHKinFit* fitObject = new HHKinFit2::HHKinFit();
-  
+ 
+
+  bjetFit->setInitStart(100);
+  bjetFit->setInitPrecision(10);
+  whad_list[0]->setInitStart(100);
+  whad_list[0]->setInitPrecision(10);
+
   fitObject->addFitObjectE(bjetFit);
   fitObject->addFitObjectE(whad_list[0]);
 
@@ -95,10 +101,51 @@ void HHKinFit2::HHKinFitBprime::fit(){
   fitObject->addConstraint(c_jet1);
   fitObject->addConstraint(c_jet2);
 
-  fitObject->fit();
-
+  try{
+    fitObject->fit();
+  }
+  catch(HHLimitSettingException const& e){
+    std::cout << e.what() << std::endl;
+  }
+  catch(HHKinFit2::HHEnergyRangeException const& e){
+     std::cout << e.what() << std::endl;
+  }
+ 
   initialHH = (TLorentzVector)bprime->getInitial4Vector();
   finalHH = (TLorentzVector)bprime->getFit4Vector();
+
+  //initial vectors
+  TLorentzVector wlep_ini = wlepFit->getInitial4Vector();
+  TLorentzVector bjet_ini = bjetFit->getInitial4Vector();  
+  TLorentzVector whad_jet1_ini = whad_list[0]->getInitial4Vector();
+  TLorentzVector whad_jet2_ini = whad_list[1]->getInitial4Vector();
+  TLorentzVector top_ini = top_lep->getInitial4Vector();
+  TLorentzVector whad_ini = w_had->getInitial4Vector();
+
+  //fit vectors
+  TLorentzVector wlep_fit = wlepFit->getFit4Vector();
+  TLorentzVector bjet_fit = bjetFit->getFit4Vector();  
+  TLorentzVector whad_jet1_fit = whad_list[0]->getFit4Vector();
+  TLorentzVector whad_jet2_fit = whad_list[1]->getFit4Vector();
+  TLorentzVector top_fit = top_lep->getFit4Vector();
+  TLorentzVector whad_fit = w_had->getFit4Vector();
+
+  std::cout<<"Initial"<<std::endl;
+  std::cout<<"W lep: Mass "<<wlep_ini.M()<<" "; wlep_ini.Print();
+  std::cout<<"b jet: Mass "<<bjet_ini.M()<<" "; bjet_ini.Print();
+  std::cout<<"W had jet 1: Mass "<<whad_jet1_ini.M()<<" "; whad_jet1_ini.Print();
+  std::cout<<"W had jet 2: Mass "<<whad_jet2_ini.M()<<" "; whad_jet2_ini.Print();
+  std::cout<<"Top: Mass "<<top_ini.M()<<" "; top_ini.Print();
+  std::cout<<"Whad: Mass "<<whad_ini.M()<<" "; whad_ini.Print();
+
+  std::cout<<"Fitted"<<std::endl;
+  std::cout<<"W lep: Mass "<<wlep_fit.M()<<" "; wlep_fit.Print();
+  std::cout<<"b jet: Mass "<<bjet_fit.M()<<" "; bjet_fit.Print();
+  std::cout<<"W had jet 1: Mass "<<whad_jet1_fit.M()<<" "; whad_jet1_fit.Print();
+  std::cout<<"W had jet 2: Mass "<<whad_jet2_fit.M()<<" "; whad_jet2_fit.Print();
+  std::cout<<"Top: Mass "<<top_fit.M()<<" "; top_fit.Print();
+  std::cout<<"Whad: Mass "<<whad_fit.M()<<" "; whad_fit.Print();
+
 }
 
 
