@@ -35,7 +35,10 @@ namespace HHKinFit2{
     
     //Getters
     double getBestChi2();
-  
+    TLorentzVector initial_Bprime(){return initialHH;}
+    TLorentzVector final_Bprime(){return finalHH;}
+
+
   private:
     HHLorentzVector m_bjet,m_Wlep;
     std::vector<HHLorentzVector> m_Whad_jets;

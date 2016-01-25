@@ -53,6 +53,28 @@ void HHKinFit2::HHKinFitBprime::fit(){
   //  w_had->addSubobject(jet);
   HHFitObject* bprime = new HHFitObjectComposite(top_lep,w_had);
 
+  try{
+    whad_list[0]->setLowerFitLimitE(1);
+    whad_list[1]->setLowerFitLimitE(1);
+    whad_list[0]->setUpperFitLimitE(5000);
+    whad_list[1]->setUpperFitLimitE(5000);
+  }
+  catch(HHLimitSettingException const& e){
+     std::cout << "Exception while setting W_{had} - jet limits" << std::endl;
+     std::cout << e.what() << std::endl;
+  }
+
+  try{
+    wlepFit->setLowerFitLimitE(1);
+    bjetFit->setLowerFitLimitE(1);
+    wlepFit->setUpperFitLimitE(5000);
+    bjetFit->setUpperFitLimitE(5000);
+  }
+  catch(HHLimitSettingException const& e){
+    std::cout << "Exception while setting top limits:" << std::endl;
+    std::cout << e.what() << std::endl;
+  }
+
   //prepare constraints
   HHFitConstraint* c_toplep_mass = new HHFitConstraintEHardM(bjetFit,wlepFit, 175);
   HHFitConstraint* c_whad_mass = new HHFitConstraintEHardM(whad_list[0],whad_list[1], 80);
@@ -77,7 +99,6 @@ void HHKinFit2::HHKinFitBprime::fit(){
 
   initialHH = (TLorentzVector)bprime->getInitial4Vector();
   finalHH = (TLorentzVector)bprime->getFit4Vector();
-
-  
-
 }
+
+
