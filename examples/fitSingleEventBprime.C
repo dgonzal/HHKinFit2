@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
   whad_jet_errors.push_back(7.);
 
   HHKinFitBprime bprimefit(bjet, wlep, whad_jets,whad_jet_errors,10.,10.);
-
+  bprimefit.set_verbosity(2);
   bprimefit.fit();
 
   std::cout<<"Initial B Mass "<<bprimefit.initial_Bprime().M()<<std::endl;
