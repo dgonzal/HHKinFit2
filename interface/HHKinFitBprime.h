@@ -37,13 +37,16 @@ namespace HHKinFit2{
     double getBestChi2();
     TLorentzVector initial_Bprime(){return initialHH;}
     TLorentzVector final_Bprime(){return finalHH;}
-
+    void set_verbosity(int verb){verbosity_=verb;}
 
   private:
     HHLorentzVector m_bjet,m_Wlep;
     std::vector<HHLorentzVector> m_Whad_jets;
     double m_bestChi2 = 99999;
-    
+    std::vector<double> sigma_Whad_jets_;
+    double sigma_Wlep_, sigma_bjet_;
+    int verbosity_ = -1;
+
     TLorentzVector initialHH,finalHH;
   };
 }

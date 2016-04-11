@@ -31,9 +31,15 @@ HHKinFit2::HHKinFitBprime::HHKinFitBprime(TLorentzVector const& bjet,
 
   m_bjet = HHLorentzVector(bjet);
   m_Wlep = HHLorentzVector(Wlep);
+  sigma_Wlep_=sigma_Wlep;
+  sigma_bjet_=sigma_bjet;
+  sigma_Whad_jets_=sigma_Whad_jets;
+
   for(auto jet : Whad_jets)
     m_Whad_jets.push_back(HHLorentzVector(jet));
   
+  
+
   //m_Wlep.SetMkeepE(80.4);
 }
 
@@ -41,20 +47,22 @@ HHKinFit2::HHKinFitBprime::HHKinFitBprime(TLorentzVector const& bjet,
 void HHKinFit2::HHKinFitBprime::fit(){
   //vector of fit variables
   HHFitObjectE* bjetFit = new HHFitObjectEConstBeta(m_bjet);
+  bjetFit->setCovMatrix(sigma_bjet_);
   HHFitObjectE* wlepFit = new HHFitObjectEConstM(m_Wlep);
+  wlepFit->setCovMatrix(sigma_Wlep_);
   std::vector<HHFitObjectE*> whad_list;
   for(auto jet : m_Whad_jets)
     whad_list.push_back(new HHFitObjectEConstBeta(jet));
-
-
+  
   for(unsigned int i=0; i< whad_list.size();i++){
+    whad_list[i]->setCovMatrix(sigma_Whad_jets_[i]);
     if (i !=0)
       continue;
     HHFitObjectE* jetfit = whad_list[i];
     HHLorentzVector jet = m_Whad_jets[i];
     try{
-      jetfit->setLowerFitLimitE(jet.E()*0.995);
-      jetfit->setUpperFitLimitE(jet.E()*1.005);
+      jetfit->setLowerFitLimitE(jet.E()*0.95);
+      jetfit->setUpperFitLimitE(jet.E()*1.05);
     }
     catch(HHLimitSettingException const& e){
      std::cout << "Exception while setting W_{had} - jet limits" << std::endl;
@@ -73,7 +81,7 @@ void HHKinFit2::HHKinFitBprime::fit(){
   HHLorentzVector bjetmax = m_bjet;
   bjetmax.SetEkeepBeta(m_bjet.E()*1.05);
   
-  std::cout<<"min "<<bjetmin.E()<< " max "<<bjetmax.E()<<std::endl;
+  //std::cout<<"min "<<bjetmin.E()<< " max "<<bjetmax.E()<<std::endl;
   /*
   try{
     whad_list[0]->setLowerFitLimitE(680);
@@ -86,16 +94,17 @@ void HHKinFit2::HHKinFitBprime::fit(){
      std::cout << e.what() << std::endl;
   }
   */
+
   try{
     
-    bjetFit->setLowerFitLimitE(20);
-    bjetFit->setUpperFitLimitE(180);
+    bjetFit->setLowerFitLimitE(bjetmin.E());
+    bjetFit->setUpperFitLimitE(bjetmax.E());
     
     //bjetFit->setLowerFitLimitE(175,bjetmin);
     //bjetFit->setUpperFitLimitE(175,bjetmax);
     
-    wlepFit->setUpperFitLimitE(380);
-    wlepFit->setLowerFitLimitE(290);
+    wlepFit->setUpperFitLimitE(m_Wlep.E()*1.05);
+    wlepFit->setLowerFitLimitE(m_Wlep.E()*0.95);
   }
   catch(HHLimitSettingException const& e){
     std::cout << "Exception while setting top limits:" << std::endl;
@@ -110,7 +119,7 @@ void HHKinFit2::HHKinFitBprime::fit(){
   HHFitConstraint* c_bjet = new HHFitConstraint4Vector(bjetFit, false, false,false, true);
   HHFitConstraint* c_jet1 = new HHFitConstraint4Vector(whad_list[0], false, false,false, true);
   HHFitConstraint* c_jet2 = new HHFitConstraint4Vector(whad_list[1], false, false,false, true);
-  HHFitConstraint* c_balance = new HHFitConstraint4Vector(bprime, true, true,false, false);
+  //HHFitConstraint* c_balance = new HHFitConstraint4Vector(bprime, true, true,false, false);
   //fit
   HHKinFit2::HHKinFit* fitObject = new HHKinFit2::HHKinFit();
  
@@ -123,7 +132,7 @@ void HHKinFit2::HHKinFitBprime::fit(){
   whad_list[1]->setInitStart(whad_list[1]->getInitial4Vector().Energy());
   whad_list[1]->setInitPrecision(0.001);
 
-  fitObject->addFitObjectE(bjetFit);
+  //fitObject->addFitObjectE(bjetFit);
   //fitObject->addFitObjectE(whad_list[0]);
   fitObject->addFitObjectE(whad_list[0]);
 
@@ -133,6 +142,14 @@ void HHKinFit2::HHKinFitBprime::fit(){
   fitObject->addConstraint(c_bjet);
   fitObject->addConstraint(c_jet1);
   fitObject->addConstraint(c_jet2);
+
+  if(verbosity_>1){
+    std::cout<<"top lep "<<std::endl;
+    top_lep->printCovMatrix();
+    std::cout<<"W had "<<std::endl;
+    w_had->printCovMatrix();
+  }
+
   try{
     fitObject->fit();
   }
@@ -167,7 +184,11 @@ void HHKinFit2::HHKinFitBprime::fit(){
   TLorentzVector whad_jet1_fit = whad_list[0]->getFit4Vector();
   TLorentzVector whad_jet2_fit = whad_list[1]->getFit4Vector();
   TLorentzVector top_fit = top_lep->getFit4Vector();
-  TLorentzVector whad_fit = w_had->getFit4Vector();
+  TLorentzVector whad_fit = w_had->getFit4Vector();  
+
+
+  if(verbosity_<1)
+    return;
 
   std::cout<<"Initial"<<std::endl;
   std::cout<<"W lep: Mass "<<wlep_ini.M()<<" "; wlep_ini.Print();
