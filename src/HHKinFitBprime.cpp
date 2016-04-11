@@ -34,7 +34,7 @@ HHKinFit2::HHKinFitBprime::HHKinFitBprime(TLorentzVector const& bjet,
   for(auto jet : Whad_jets)
     m_Whad_jets.push_back(HHLorentzVector(jet));
   
-  m_Wlep.SetMkeepE(80);
+  //m_Wlep.SetMkeepE(80.4);
 }
 
 
@@ -45,62 +45,94 @@ void HHKinFit2::HHKinFitBprime::fit(){
   std::vector<HHFitObjectE*> whad_list;
   for(auto jet : m_Whad_jets)
     whad_list.push_back(new HHFitObjectEConstBeta(jet));
-  
+
+
+  for(unsigned int i=0; i< whad_list.size();i++){
+    if (i !=0)
+      continue;
+    HHFitObjectE* jetfit = whad_list[i];
+    HHLorentzVector jet = m_Whad_jets[i];
+    try{
+      jetfit->setLowerFitLimitE(jet.E()*0.995);
+      jetfit->setUpperFitLimitE(jet.E()*1.005);
+    }
+    catch(HHLimitSettingException const& e){
+     std::cout << "Exception while setting W_{had} - jet limits" << std::endl;
+     std::cout << e.what() << std::endl;
+    }
+  }
   //prepare composite objects
   HHFitObject* top_lep = new HHFitObjectComposite(bjetFit,wlepFit);
   HHFitObject* w_had = new HHFitObjectComposite(whad_list[0],whad_list[1]);
   //for(auto jet : whad_list)
   //  w_had->addSubobject(jet);
   HHFitObject* bprime = new HHFitObjectComposite(top_lep,w_had);
-
+  
+  HHLorentzVector bjetmin = m_bjet;
+  bjetmin.SetEkeepBeta(m_bjet.E()*.95);
+  HHLorentzVector bjetmax = m_bjet;
+  bjetmax.SetEkeepBeta(m_bjet.E()*1.05);
+  
+  std::cout<<"min "<<bjetmin.E()<< " max "<<bjetmax.E()<<std::endl;
+  /*
   try{
-    whad_list[0]->setLowerFitLimitE(1);
-    whad_list[1]->setLowerFitLimitE(1);
-    whad_list[0]->setUpperFitLimitE(5000);
-    whad_list[1]->setUpperFitLimitE(5000);
+    whad_list[0]->setLowerFitLimitE(680);
+    whad_list[1]->setLowerFitLimitE(200);
+    whad_list[0]->setUpperFitLimitE(700);
+    whad_list[1]->setUpperFitLimitE(400);
   }
   catch(HHLimitSettingException const& e){
      std::cout << "Exception while setting W_{had} - jet limits" << std::endl;
      std::cout << e.what() << std::endl;
   }
-
+  */
   try{
-    wlepFit->setLowerFitLimitE(1);
-    bjetFit->setLowerFitLimitE(1);
-    wlepFit->setUpperFitLimitE(5000);
-    bjetFit->setUpperFitLimitE(5000);
+    
+    bjetFit->setLowerFitLimitE(20);
+    bjetFit->setUpperFitLimitE(180);
+    
+    //bjetFit->setLowerFitLimitE(175,bjetmin);
+    //bjetFit->setUpperFitLimitE(175,bjetmax);
+    
+    wlepFit->setUpperFitLimitE(380);
+    wlepFit->setLowerFitLimitE(290);
   }
   catch(HHLimitSettingException const& e){
     std::cout << "Exception while setting top limits:" << std::endl;
     std::cout << e.what() << std::endl;
   }
-
+  
   //prepare constraints
   HHFitConstraint* c_toplep_mass = new HHFitConstraintEHardM(bjetFit,wlepFit, 175);
-  HHFitConstraint* c_whad_mass = new HHFitConstraintEHardM(whad_list[0],whad_list[1], 80);
+  HHFitConstraint* c_whad_mass = new HHFitConstraintEHardM(whad_list[0],whad_list[1], 80.4);
+  //HHFitConstraint* c_wlep_mass = new HHFitConstraintEHardM(whad_list[0],whad_list[1], 80);
 
   HHFitConstraint* c_bjet = new HHFitConstraint4Vector(bjetFit, false, false,false, true);
   HHFitConstraint* c_jet1 = new HHFitConstraint4Vector(whad_list[0], false, false,false, true);
   HHFitConstraint* c_jet2 = new HHFitConstraint4Vector(whad_list[1], false, false,false, true);
-
+  HHFitConstraint* c_balance = new HHFitConstraint4Vector(bprime, true, true,false, false);
   //fit
   HHKinFit2::HHKinFit* fitObject = new HHKinFit2::HHKinFit();
  
-
-  bjetFit->setInitStart(100);
-  bjetFit->setInitPrecision(10);
-  whad_list[0]->setInitStart(100);
-  whad_list[0]->setInitPrecision(10);
+  bjetFit->setInitStart(bjetFit->getInitial4Vector().Energy());
+  bjetFit->setInitPrecision(0.001);
+  wlepFit->setInitStart(wlepFit->getInitial4Vector().Energy());
+  wlepFit->setInitPrecision(0.001);
+  whad_list[0]->setInitStart(whad_list[0]->getInitial4Vector().Energy());
+  whad_list[0]->setInitPrecision(0.001);
+  whad_list[1]->setInitStart(whad_list[1]->getInitial4Vector().Energy());
+  whad_list[1]->setInitPrecision(0.001);
 
   fitObject->addFitObjectE(bjetFit);
+  //fitObject->addFitObjectE(whad_list[0]);
   fitObject->addFitObjectE(whad_list[0]);
 
+  //fitObject->addConstraint(c_balance);
   fitObject->addConstraint(c_toplep_mass);
   fitObject->addConstraint(c_whad_mass);
   fitObject->addConstraint(c_bjet);
   fitObject->addConstraint(c_jet1);
   fitObject->addConstraint(c_jet2);
-
   try{
     fitObject->fit();
   }
@@ -110,7 +142,14 @@ void HHKinFit2::HHKinFitBprime::fit(){
   catch(HHKinFit2::HHEnergyRangeException const& e){
      std::cout << e.what() << std::endl;
   }
- 
+  std::cout<<"Conv "<<fitObject->getConvergence()<<std::endl;
+
+  /*
+  std::cout<<"Convergence map"<<std::endl;
+  for(auto elem :conv_map)
+    std::cout<<"First "<<elem.first<<" Second "<<elem.second<<std::endl;
+  */
+
   initialHH = (TLorentzVector)bprime->getInitial4Vector();
   finalHH = (TLorentzVector)bprime->getFit4Vector();
 
